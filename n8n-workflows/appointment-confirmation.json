@@ -1,0 +1,217 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "appointment-created",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "39aedbe1-6260-4440-be36-360a904fba60",
+      "name": "Webhook",
+      "webhookId": "eee4432e-73f0-4f73-b270-f74b83444694"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-lite",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-lite"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=أنت مساعد ذكي لمركز تغيير الزيت \"سبيد أويل\". \nاكتب رسالة تأكيد موعد باللغة العربية للعميل التالي:\n\nالاسم: {{ $json.body.customer_name }}\nالجوال: {{ $json.body.phone }}\nنوع السيارة: {{ $json.body.car_type }}\nالخدمة: {{ $json.body.service_type }}\nالتاريخ: {{ $json.body.appointment_date }}\nالوقت: {{ $json.body.appointment_time }}\n\nاكتب رسالة واتساب قصيرة ومهنية وودية تؤكد الموعد.\n\n[تعليمات صارمة للنظام]: \nأخرج نص الرسالة النهائية فقط. يُمنع منعاً باتاً كتابة أي مقدمات أو ردود حوارية أو تبريرات (مثل: \"بالتأكيد\"، \"إليك المسودة\"، إلخ). ابدأ الرسالة مباشرة بـ \"السلام عليكم\"."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "432c9b41-3ee6-4854-ba82-2e459469c887",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Fhd3Gi2XimQR237U",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "whatsapp:+14155238886",
+        "to": "=whatsapp:+966{{ $('Webhook').item.json.body.phone.replace(/^0/, '') }}",
+        "message": "={{ $('Message a model').item.json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        560,
+        0
+      ],
+      "id": "a7b93e2d-b455-439f-b7b3-0132b2d2dd13",
+      "name": "Send an SMS/MMS/WhatsApp message",
+      "credentials": {
+        "twilioApi": {
+          "id": "zyGrikbMVkyW90JH",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        0
+      ],
+      "id": "432bf878-f36a-42ce-bdc3-2a5a912d761c",
+      "name": "Wait",
+      "webhookId": "8c73d7b9-2fec-476e-b7f2-eb6aacaefe15"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=أنت مساعد ذكي لمركز تغيير الزيت \"سبيد أويل\".\nاكتب رسالة تذكير قصيرة وودية باللغة العربية للعميل:\n\nالاسم: {{ $('Webhook').item.json.body.customer_name }}\nنوع السيارة: {{ $('Webhook').item.json.body.car_type }}\n\nذكّره بأن موعد صيانة سيارته اقترب وأن الفريق جاهز لاستقباله."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        0
+      ],
+      "id": "17528e2e-6d9b-46c8-8811-fb315ef21c0e",
+      "name": "Message a model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Fhd3Gi2XimQR237U",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "whatsapp:+14155238886",
+        "to": "=whatsapp:+966{{ $('Webhook').item.json.body.phone.replace(/^0/, '') }}",
+        "message": "={{ $('Message a model1').item.json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        0
+      ],
+      "id": "bb81b781-72aa-49a6-b5a7-5716321c3d9e",
+      "name": "Send an SMS/MMS/WhatsApp message1",
+      "credentials": {
+        "twilioApi": {
+          "id": "zyGrikbMVkyW90JH",
+          "name": "Twilio account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send an SMS/MMS/WhatsApp message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an SMS/MMS/WhatsApp message": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Send an SMS/MMS/WhatsApp message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6f3da658-7191-4ce5-ab4b-171ac3150d99",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fb686bb0d834b87b10730768b8ebfe0bb43c9e8926eb6504f10a4a19b02ede4c"
+  },
+  "id": "BX2S7KwtcWwhgdjk",
+  "tags": []
+}
